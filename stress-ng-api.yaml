@@ -1,0 +1,217 @@
+openapi: 3.0.3
+info:
+  title: Stress Testing API
+  description: API for stressing CPU and other system resources
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /:
+    get:
+      summary: Get the home page of the application
+      responses:
+        "200":
+          description: Successful response
+
+  /stress_cpu:
+    post:
+      summary: Run CPU stress test
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stress_time:
+                  type: string
+                  description: Time in seconds to run the stress test
+              required:
+                - stress_time
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: array
+                    items:
+                      type: string
+      deprecated: true
+  /check_temp:
+    post:
+      summary: Check the CPU temperature during stress test
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stress_time:
+                  type: string
+                  description: Time in seconds to run the stress test
+                cpu_number:
+                  type: string
+                  description: The number of CPUs to stress
+              required:
+                - stress_time
+                - cpu_number
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: array
+                    items:
+                      type: string
+  /stress_matrix:
+    post:
+      summary: Run matrix multiplication stress test
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stress_time:
+                  type: string
+                  description: Time in seconds to run the stress test
+                cpu_number:
+                  type: string
+                  description: The number of CPUs to stress
+              required:
+                - stress_time
+                - cpu_number
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: array
+                    items:
+                      type: string
+  /interrupt_load:
+    post:
+      summary: Run interrupt load stress test
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stress_time:
+                  type: string
+                  description: Time in seconds to run the stress test
+                frequency:
+                  type: string
+                  description: Frequency of timer interrupts
+                cpu_number:
+                  type: string
+                  description: The number of CPUs to stress
+              required:
+                - frequency
+                - cpu_number
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: array
+                    items:
+                      type: string
+  /iomix_stressor:
+    post:
+      summary: Run I/O mix stress test
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stress_time:
+                  type: string
+                  description: Time in seconds to run the stress test
+                frequency:
+                  type: string
+                  description: Frequency of timer interrupts
+                cpu_number:
+                  type: string
+                  description: The number of CPUs to use
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: array
+                    items:
+                      type: string
+                    description: The output of the stress test
+                example:
+                  output: [ 'stress-ng: info:  [14847] I/O complex load generator' ]
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+
+  /virtual_memory_stressor:
+    post:
+      summary: Run virtual memory stress test
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stress_time:
+                  type: string
+                  description: Time in seconds to run the stress test
+                vmnumber:
+                  type: string
+                  description: The number of virtual memory areas to use
+                cpu_number:
+                  type: string
+                  description: The number of CPUs to use
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: array
+                    items:
+                      type: string
+                    description: The output of the stress test
+                example:
+                  output: [ 'stress-ng: info:  [14847] virtual memory load generator' ]
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+

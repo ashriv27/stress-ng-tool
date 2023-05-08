@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Stress-ng Tool</title>
+  </head>
+  <body>
+    <h1>Stress-ng Tool</h1>
+    <form method="POST">
+      <label for="endpoint">Select Endpoint:</label>
+      <select id="endpoint" name="endpoint">
+        <option value="stress_cpu">Stress CPU</option>
+        <option value="check_temp">Check Temperature</option>
+        <option value="stress_matrix">Stress Matrix</option>
+        <option value="interrupt_load">Large interrupt load</option>
+          <option value="iomix_stressor"> I/O mix stressor</option>
+          <option value="virtual_memory_stressor"> CPU and Virtual memory stressor</option>
+      </select>
+      <br>
+      <br><label>Endpoint Description:</label>
+      <div id="description"></div>
+      <br>
+      <label for="stress-time">Stress Time:</label>
+      <input type="text" id="stress-time" name="stress_time" >
+      <br>
+      <br>
+      <label for="cpu-number">CPU Number:</label>
+      <input type="text" id="cpu-number" name="cpu_number">
+      <br>
+      <br>
+      <label for="instances">Instances:</label>
+      <input type="text" id="instances" name="instances">
+      <br>
+       <br>
+      <label for="frequency">Frequency:</label>
+      <input type="text" id="frequency" name="frequency">
+      <br>
+         <br>
+      <label for="vmnumber">Virtual Memory Stressor No.:</label>
+      <input type="text" id="vmnumber" name="vmnumber">
+      <br>
+      <br>
+      <button type="submit">Submit</button>
+    </form>
+    <br>
+    <h2>Output:</h2>
+    <div id="output"></div>
+    <h2>System Status:</h2>
+    <div id="status"></div>
+    <script>
+      const form = document.querySelector('form');
+      const output = document.querySelector('#output');
+      const description = document.querySelector('#description');
+      const stressTimeInput = document.querySelector('#stress-time');
+      const cpuNumberInput = document.querySelector('#cpu-number');
+      const instancesInput = document.querySelector('#instances');
+      const frequencyInput = document.querySelector('#frequency');
+      const vmNumberInput = document.querySelector('#vmnumber');
+
+
+      const endpointInputs = {
+  'stress_cpu': [stressTimeInput],
+  'check_temp': [cpuNumberInput,stressTimeInput],
+  'stress_matrix': [cpuNumberInput,stressTimeInput],
+  'interrupt_load': [cpuNumberInput,frequencyInput,frequencyInput],
+  'iomix_stressor': [cpuNumberInput, stressTimeInput],
+  'virtual_memory_stressor': [cpuNumberInput, frequencyInput, vmNumberInput],
+  'check_status': [],
+};
+
+      const endpointDescriptions = {
+        'stress_cpu': 'Stress the CPU',
+        'check_temp': 'Check the temperature',
+        'stress_matrix': 'The matrix stressor is a good way to exercise the CPU floating point operations as well as memory and processor data cache. Of all the tests, this one generally heats x86 CPUs the best.If you want to run an instance of this on ALL the CPUs on your machine, specify 0 instances and stress-ng will figure out how many to run',
+        'interrupt_load': 'Stress everything',
+          'iomix_stressor': 'Stress with mix of I/O operations with verbose output',
+          'virtual_memory_stressor': 'CPU and virtual memory stressors'
+      };
+ // Function to update system status
+
+      form.addEventListener('change', (event) => {
+        if (event.target.matches('#endpoint')) {
+          const endpoint = event.target.value;
+          description.innerText = endpointDescriptions[endpoint];
+        }
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const endpoint = formData.get('endpoint');
+        const url = `http://localhost:5000/${endpoint}`;
+        const options = {
+          method: 'POST',
+          body: formData
+        };
+
+        try {
+            // Show "In progress" message
+           output.innerText = 'In progress...';
+          const response = await fetch(url, options);
+          const data = await response.json();
+          output.innerText = JSON.stringify(data, null, 2);
+        } catch (error) {
+          console.error(error);
+          output.innerHTML = 'An error occurred while processing your request.';
+        }
+      });
+
+
+
+form.addEventListener('change', (event) => {
+  const endpoint = event.target.value;
+  description.innerText = endpointDescriptions[endpoint];
+  const requiredInputs = endpointInputs[endpoint];
+  [stressTimeInput, cpuNumberInput, instancesInput, frequencyInput, vmNumberInput].forEach(input => {
+    const label = document.querySelector(`label[for="${input.id}"]`);
+    if (requiredInputs.includes(input)) {
+      input.style.display = 'block';
+      label.style.display = 'block';
+    } else {
+      input.style.display = 'none';
+      label.style.display = 'none';
+    }
+  });
+});
+
+
+form.addEventListener('change', (event) => {
+  const endpoint = event.target.value;
+  description.innerText = endpointDescriptions[endpoint];
+  const requiredInputs = endpointInputs[endpoint];
+  [stressTimeInput, cpuNumberInput, instancesInput, frequencyInput, vmNumberInput].forEach(input => {
+    if (requiredInputs.includes(input)) {
+      input.classList.remove('hidden');
+      input.previousElementSibling.classList.remove('hidden');
+    } else {
+      input.classList.add('hidden');
+      input.previousElementSibling.classList.add('hidden');
+    }
+  });
+});
+
+
+      function updateStatus() {
+  fetch('/check_status', { method: 'GET' })
+    .then(response => response.json())
+    .then(data => {
+      const statusElement = document.getElementById('status');
+      if (data.output === 'No stress test or stressor is running on system') {
+        statusElement.innerText = 'No stress test or stressor is running on system';
+      } else {
+        statusElement.innerText = 'Some stress tests are still running on system';
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
+
+}
+
+setInterval(updateStatus, 2000); // Call updateStatus every 5 seconds
+
+    </script>
+  </body>
+</html>
